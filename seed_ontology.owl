@@ -1,0 +1,115 @@
+<?xml version="1.0"?>
+<rdf:RDF xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+         xmlns:xsd="http://www.w3.org/2001/XMLSchema#"
+         xmlns:rdfs="http://www.w3.org/2000/01/rdf-schema#"
+         xmlns:owl="http://www.w3.org/2002/07/owl#"
+         xml:base="http://example.org/seed.owl"
+         xmlns="http://example.org/seed.owl#">
+
+<owl:Ontology rdf:about="http://example.org/seed.owl"/>
+
+<owl:ObjectProperty rdf:about="#chứaThôngTin">
+  <rdfs:domain rdf:resource="#Lịch_Sử_Việt_Nam"/>
+  <rdfs:range rdf:resource="#Lưu_Trữ_Thông_Tin_Lịch_Sử"/>
+</owl:ObjectProperty>
+
+<owl:ObjectProperty rdf:about="#hỗTrợNghiênCứu">
+  <rdfs:domain rdf:resource="#Lưu_Trữ_Thông_Tin_Lịch_Sử"/>
+  <rdfs:range rdf:resource="#Hỗ_Trợ_Tra_Cứu_Sự_Kiện_Lịch_Sử"/>
+</owl:ObjectProperty>
+
+<owl:ObjectProperty rdf:about="#đượcĐịnhDanhBởi">
+  <rdfs:domain rdf:resource="#Lịch_Sử_Việt_Nam"/>
+  <rdfs:range rdf:resource="#Quốc_Hiệu"/>
+</owl:ObjectProperty>
+
+<owl:ObjectProperty rdf:about="#nằmTại">
+  <rdfs:domain rdf:resource="#Lịch_Sử_Việt_Nam"/>
+  <rdfs:range rdf:resource="#Vị_Trí_Và_Diện_Tích"/>
+</owl:ObjectProperty>
+
+<owl:ObjectProperty rdf:about="#liênQuanĐến">
+  <rdfs:domain rdf:resource="#Lịch_Sử_Việt_Nam"/>
+  <rdfs:range rdf:resource="#Địa_Thế"/>
+</owl:ObjectProperty>
+
+<owl:ObjectProperty rdf:about="#phânLoạiBởi">
+  <rdfs:domain rdf:resource="#Lịch_Sử_Việt_Nam"/>
+  <rdfs:range rdf:resource="#Chủng_Loại"/>
+</owl:ObjectProperty>
+
+<owl:ObjectProperty rdf:about="#cóNguồnGốcTừ">
+  <rdfs:domain rdf:resource="#Lịch_Sử_Việt_Nam"/>
+  <rdfs:range rdf:resource="#Gốc_Tích"/>
+</owl:ObjectProperty>
+
+<owl:ObjectProperty rdf:about="#thuộcVề">
+  <rdfs:domain rdf:resource="#Lịch_Sử_Việt_Nam"/>
+  <rdfs:range rdf:resource="#Người_Việt_Nam"/>
+</owl:ObjectProperty>
+
+<owl:ObjectProperty rdf:about="#baoGồm">
+  <rdfs:domain rdf:resource="#Lịch_Sử_Việt_Nam"/>
+  <rdfs:range rdf:resource="#Sự_Mở_Mang_Bờ_Cõi"/>
+</owl:ObjectProperty>
+
+<owl:ObjectProperty rdf:about="#đượcChiaThành">
+  <rdfs:domain rdf:resource="#Lịch_Sử_Việt_Nam"/>
+  <rdfs:range rdf:resource="#Thời_Kỳ_Lịch_Sử"/>
+</owl:ObjectProperty>
+
+<owl:ObjectProperty rdf:about="#thamChiếuTừ">
+  <rdfs:domain rdf:resource="#Lịch_Sử_Việt_Nam"/>
+  <rdfs:range rdf:resource="#Tài_Liệu_Tham_Khảo"/>
+</owl:ObjectProperty>
+
+<owl:Class rdf:about="#Lịch_Sử_Việt_Nam">
+  <rdfs:subClassOf rdf:resource="http://www.w3.org/2002/07/owl#Thing"/>
+</owl:Class>
+
+<owl:Class rdf:about="#Lưu_Trữ_Thông_Tin_Lịch_Sử">
+  <rdfs:subClassOf rdf:resource="http://www.w3.org/2002/07/owl#Thing"/>
+</owl:Class>
+
+<owl:Class rdf:about="#Hỗ_Trợ_Tra_Cứu_Sự_Kiện_Lịch_Sử">
+  <rdfs:subClassOf rdf:resource="http://www.w3.org/2002/07/owl#Thing"/>
+</owl:Class>
+
+<owl:Class rdf:about="#Quốc_Hiệu">
+  <rdfs:subClassOf rdf:resource="http://www.w3.org/2002/07/owl#Thing"/>
+</owl:Class>
+
+<owl:Class rdf:about="#Vị_Trí_Và_Diện_Tích">
+  <rdfs:subClassOf rdf:resource="http://www.w3.org/2002/07/owl#Thing"/>
+</owl:Class>
+
+<owl:Class rdf:about="#Địa_Thế">
+  <rdfs:subClassOf rdf:resource="http://www.w3.org/2002/07/owl#Thing"/>
+</owl:Class>
+
+<owl:Class rdf:about="#Chủng_Loại">
+  <rdfs:subClassOf rdf:resource="http://www.w3.org/2002/07/owl#Thing"/>
+</owl:Class>
+
+<owl:Class rdf:about="#Gốc_Tích">
+  <rdfs:subClassOf rdf:resource="http://www.w3.org/2002/07/owl#Thing"/>
+</owl:Class>
+
+<owl:Class rdf:about="#Người_Việt_Nam">
+  <rdfs:subClassOf rdf:resource="http://www.w3.org/2002/07/owl#Thing"/>
+</owl:Class>
+
+<owl:Class rdf:about="#Sự_Mở_Mang_Bờ_Cõi">
+  <rdfs:subClassOf rdf:resource="http://www.w3.org/2002/07/owl#Thing"/>
+</owl:Class>
+
+<owl:Class rdf:about="#Thời_Kỳ_Lịch_Sử">
+  <rdfs:subClassOf rdf:resource="http://www.w3.org/2002/07/owl#Thing"/>
+</owl:Class>
+
+<owl:Class rdf:about="#Tài_Liệu_Tham_Khảo">
+  <rdfs:subClassOf rdf:resource="http://www.w3.org/2002/07/owl#Thing"/>
+</owl:Class>
+
+
+</rdf:RDF>
