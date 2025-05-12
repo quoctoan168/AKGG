@@ -34,48 +34,46 @@ class knowledge_graph_builder:
             return f.read().strip()
 
     def create_prompt(self, text):
-        """Create a prompt to extract entities, relationships, and properties from text based on ontology."""
+        """Create a prompt to extract entities and relationships from text based on ontology."""
         ontology_summary = (
             f"Classes: {', '.join(self.classes)}\n"
-            f"Datatype Properties: {', '.join(self.datatype_props)}\n"
             f"Object Properties: {', '.join(self.object_props)}"
         )
         prompt = Prompt(
-            task_description="Extract entities, relationships, and properties from the provided text based on the given ontology.",
-            context="The ontology defines the structure for a Knowledge Graph about Vietnamese history. Use it to identify relevant entities, their properties, and relationships in the text.",
+            task_description="Extract entities and relationships from the provided text based on the given ontology.",
+            context="The ontology defines the structure for a Knowledge Graph about Vietnamese history. Use it to identify relevant entities and their relationships in the text.",
             input_data=text,
-            goal="Identify entities (instances of ontology classes), their datatype properties, and relationships (object properties) as defined in the ontology.",
+            goal="Identify entities (instances of ontology classes) and relationships (object properties) as defined in the ontology.",
             output_format=(
                 "Return the result in the following format:\n"
                 "[Entities]\n"
                 "- EntityName (ClassName)\n"
-                "...\n"
-                "[Datatype Properties]\n"
-                "- EntityName.PropertyName: Value\n"
                 "...\n"
                 "[Relationships]\n"
                 "- EntityName1 -[RelationshipName]-> EntityName2\n"
                 "..."
             ),
             constraints=(
-                f"Only extract entities, properties, and relationships that match the ontology:\n{ontology_summary}\n"
-                "Do not invent new classes, properties, or relationships.\n"
-                "Ensure entity names are unique and meaningful based on the text context."
+                f"Only extract entities and relationships that match the ontology:\n{ontology_summary}\n"
+                "Do not invent new classes or relationships.\n"
+                "Ensure entity names are unique and meaningful based on the text context.\n"
+                "Every entity mentioned in relationships MUST be included in the [Entities] section with a class from the ontology.\n"
+                "Use only object properties defined in the ontology for relationships.\n"
+                "If an entity’s class is ambiguous, select the most relevant class from the ontology based on the context or the range of the object property it’s associated with."
             )
         )
         return prompt.build()
 
     def extract_kg_elements(self, text):
-        """Call the AI to extract entities, properties, and relationships from text."""
+        """Call the AI to extract entities and relationships from text."""
         prompt_text = self.create_prompt(text)
         response = self.builder._call_ai(prompt_text)
         print("✅ AI Response:\n", response)
         return self.parse_ai_response(response)
 
     def parse_ai_response(self, response):
-        """Parse the AI response into entities, datatype properties, and relationships."""
+        """Parse the AI response into entities and relationships."""
         entities = []
-        datatype_props = []
         relationships = []
         current_section = None
 
@@ -83,69 +81,111 @@ class knowledge_graph_builder:
             line = line.strip()
             if line == "[Entities]":
                 current_section = "entities"
-            elif line == "[Datatype Properties]":
-                current_section = "datatype_props"
             elif line == "[Relationships]":
                 current_section = "relationships"
             elif line and current_section:
                 if current_section == "entities" and line.startswith("-"):
                     entities.append(line[1:].strip())
-                elif current_section == "datatype_props" and line.startswith("-"):
-                    datatype_props.append(line[1:].strip())
                 elif current_section == "relationships" and line.startswith("-"):
                     relationships.append(line[1:].strip())
 
-        return entities, datatype_props, relationships
+        return entities, relationships
 
-    def store_in_neo4j(self, entities, datatype_props, relationships):
-        """Store the extracted elements in Neo4j."""
+    def store_in_neo4j(self, entities, relationships):
+        """Store the extracted elements in Neo4j, ensuring all entities exist before creating relationships."""
         with self.driver.session() as session:
-            # Create nodes for entities
+            # Collect all unique entities and their classes
+            all_entities = set()
+            entity_class_map = {}
+
+            # From entities section
             for entity in entities:
                 try:
                     name, class_name = entity.split(" (")
                     class_name = class_name.rstrip(")")
-                    session.run(
-                        "MERGE (i:Instance {name: $name, class: $class_})",
-                        name=name, class_=class_name
-                    )
-                    print(f"Created node: {name} (class: {class_name})")
+                    if class_name in self.classes:
+                        all_entities.add(name)
+                        entity_class_map[name] = class_name
+                    else:
+                        print(f"⚠️ Invalid class for entity: {entity} (class {class_name} not in ontology)")
                 except ValueError:
                     print(f"⚠️ Invalid entity format: {entity}")
 
-            # Set datatype properties
-            for prop in datatype_props:
+            # From relationships
+            for rel in relationships:
                 try:
-                    entity_prop, value = prop.split(": ")
-                    entity, prop_name = entity_prop.split(".")
-                    session.run(
-                        """
-                        MATCH (i:Instance {name: $name})
-                        SET i += $props
-                        """,
-                        name=entity, props={prop_name: value}
-                    )
-                    print(f"Set property: {entity}.{prop_name} = {value}")
-                except ValueError:
-                    print(f"⚠️ Invalid property format: {prop}")
+                    parts = rel.split(" -[")
+                    source = parts[0].strip()
+                    rel_target = parts[1].split("]-> ")
+                    target = rel_target[1].strip()
+                    all_entities.add(source)
+                    all_entities.add(target)
+                except (IndexError, ValueError):
+                    print(f"⚠️ Invalid relationship format: {rel}")
 
-            # Create relationships
+            # Create nodes for all entities
+            for entity_name in all_entities:
+                # Assign class based on ontology, default to first class if not specified
+                class_name = entity_class_map.get(entity_name)
+                if not class_name:
+                    # Infer class based on relationships
+                    for rel in relationships:
+                        try:
+                            parts = rel.split(" -[")
+                            source = parts[0].strip()
+                            rel_target = parts[1].split("]-> ")
+                            rel_name = rel_target[0]
+                            target = rel_target[1].strip()
+                            if rel_name in self.object_props and target == entity_name:
+                                prop = self.onto[rel_name]
+                                range_classes = [r.name for r in prop.range] if prop.range else []
+                                if range_classes:
+                                    class_name = range_classes[0]
+                                    break
+                        except (IndexError, ValueError):
+                            continue
+                    # Fallback to first ontology class if no class inferred
+                    class_name = class_name or self.classes[0] if self.classes else "Unknown"
+
+                if class_name in self.classes:
+                    session.run(
+                        "MERGE (i:Instance {name: $name, class: $class_})",
+                        name=entity_name, class_=class_name
+                    )
+                    print(f"Created node: {entity_name} (class: {class_name})")
+                    entity_class_map[entity_name] = class_name
+                else:
+                    print(f"⚠️ Skipping node creation for {entity_name} (invalid class: {class_name})")
+
+            # Create relationships only between valid entities
             for rel in relationships:
                 try:
                     parts = rel.split(" -[")
                     source = parts[0].strip()
                     rel_target = parts[1].split("]-> ")
                     rel_name = rel_target[0]
-                    target = rel_target[1]
-                    session.run(
-                        """
-                        MATCH (a:Instance {name: $source})
-                        MATCH (b:Instance {name: $target})
-                        MERGE (a)-[r:RELATION {type: $rel_name}]->(b)
-                        """,
-                        source=source, target=target, rel_name=rel_name
-                    )
-                    print(f"Created relationship: {source} -[{rel_name}]-> {target}")
+                    target = rel_target[1].strip()
+                    if (source in all_entities and target in all_entities and
+                            entity_class_map[source] in self.classes and
+                            entity_class_map[target] in self.classes and
+                            rel_name in self.object_props):
+                        # Validate relationship against ontology range
+                        prop = self.onto[rel_name]
+                        range_classes = [r.name for r in prop.range] if prop.range else []
+                        if entity_class_map[target] in range_classes:
+                            session.run(
+                                """
+                                MATCH (a:Instance {name: $source})
+                                MATCH (b:Instance {name: $target})
+                                MERGE (a)-[r:RELATION {type: $rel_name}]->(b)
+                                """,
+                                source=source, target=target, rel_name=rel_name
+                            )
+                            print(f"Created relationship: {source} -[{rel_name}]-> {target}")
+                        else:
+                            print(f"⚠️ Skipping relationship: {source} -[{rel_name}]-> {target} (target class {entity_class_map[target]} not in range {range_classes})")
+                    else:
+                        print(f"⚠️ Skipping relationship due to invalid entity or property: {source}, {target}, or {rel_name}")
                 except (IndexError, ValueError):
                     print(f"⚠️ Invalid relationship format: {rel}")
 
@@ -154,12 +194,12 @@ class knowledge_graph_builder:
         print("▶️ Building Knowledge Graph from text...")
         self.load_ontology()
         text = self.load_text()
-        entities, datatype_props, relationships = self.extract_kg_elements(text)
+        entities, relationships = self.extract_kg_elements(text)
         if clear_db:
             with self.driver.session() as session:
                 session.run("MATCH (n) DETACH DELETE n")
                 print("✅ Cleared Neo4j database")
-        self.store_in_neo4j(entities, datatype_props, relationships)
+        self.store_in_neo4j(entities, relationships)
         print("✅ Knowledge Graph built successfully")
 
     def close(self):
