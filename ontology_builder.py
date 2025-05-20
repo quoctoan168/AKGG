@@ -1,6 +1,8 @@
 from prompt_builder import Prompt
 from owlready2      import get_ontology, Thing, ObjectProperty, DataProperty, sync_reasoner_pellet
 import requests, json, re, types, os
+from ask_monica import ask_monica
+import unicodedata
 
 # =============== CẤU HÌNH API ===============
 def _read_api_key(file_path="API_Key.txt", model_name="monica"):
@@ -39,19 +41,11 @@ class OntologyBuilder:
 
     # ---------- gọi API ----------
     def _call_ai(self, prompt_text):
-        headers = {
-            "Authorization": f"Bearer {self.api_key}",
-            "Content-Type":  "application/json"
-        }
-        messages = [
-            {"role": "system", "content": "Bạn là API, trả đúng format, không thêm gì khác."},
-            {"role": "user",
-             "content": [{"type": "text", "text": prompt_text}]}
-        ]
-        data = {"model": self.model, "messages": messages, "temperature": 0, "stream": False}
-        res  = requests.post(self.ENDPOINT, headers=headers, json=data)
-        res.raise_for_status()
-        return res.json()["choices"][0]["message"]["content"].strip()
+        return ask_monica(
+        prompt_text,
+        model=getattr(self, "model", "gpt-4o"),
+        key_file=getattr(self, "key_file", "API_Key.txt")
+    )
 
     # ---------- bước 1: 12 CQ ----------
     def generate_cq_answers(self):
@@ -79,6 +73,24 @@ class OntologyBuilder:
         ).build() + "\n\n[CÁC CÂU HỎI]\n" + "\n".join(cq_questions)
 
         self.cq_answers = self._call_ai(prompt_text)
+        # --- Tách câu trả lời theo từng CQ bằng regex ---
+        pattern = r"(CQ\d{1,2}:\s)"
+        parts = re.split(pattern, self.cq_answers)
+        cq_dict = {}
+        for i in range(1, len(parts), 2):
+            key = parts[i].strip()  # CQ1:
+            val = parts[i + 1].strip() if i + 1 < len(parts) else ""
+            cq_dict[key] = val
+
+        # --- Lưu ra file với định dạng: CÂU HỎI + CÂU TRẢ LỜI ---
+        os.makedirs("ontology_output", exist_ok=True)
+        with open("ontology_output/cq_answers.txt", "w", encoding="utf-8") as f:
+            for i in range(1, 13):
+                key = f"CQ{i}"
+                question = cq_questions[i - 1] if i - 1 < len(cq_questions) else "Câu hỏi không rõ"
+                answer = cq_dict.get(f"{key}:", "[Không có câu trả lời]")
+                f.write(f"{question}\n{answer}\n\n")
+
         return self.cq_answers
 
     # ---------- bước 2: seed ontology ----------
@@ -110,8 +122,11 @@ class OntologyBuilder:
         if self.class_text is not None:
             return self.class_text
         prompt = (
-            "Dựa trên 12 CQ sau, LIỆT KÊ lớp, mỗi dòng '- Tên_Lớp':\n" +
-            self.cq_answers
+            "Dựa trên 12 CQ sau, LIỆT KÊ lớp, mỗi dòng ở dạng '- id: ... | label: ...' (id là tên PascalCase tiếng Việt không dấu, label là tên đầy đủ có dấu):\n"
+        "\nVí dụ:\n- id: QuocHieu | label: Quốc Hiệu\n- id: NguoiVietNam | label: Người Việt Nam\n"+
+        self.cq_answers +
+        "\nCHỈ trả về danh sách, KHÔNG được thêm giải thích, ví dụ, lời dẫn, kết luận. Không thêm bất kỳ dòng nào ngoài kết quả theo format yêu cầu!"
+        "\nOutput must be strictly only the requested list, nothing else."
         )
         self.class_text = self._call_ai(prompt)
         return self.class_text
@@ -121,10 +136,11 @@ class OntologyBuilder:
         if self.prop_text is not None:
             return self.prop_text
         prompt = (
-            "Cho danh sách lớp dưới đây, tạo THUỘC TÍNH DỮ LIỆU cho từng lớp theo mẫu 'Class: prop1, prop2':\n" +
-            "Ví dụ: Nếu lớp là 'Person', trả về 'Person: name, age'\n" +
-            "Đảm bảo mỗi lớp được liệt kê phải khớp chính xác với danh sách lớp đã cho.\n" +
-            self.class_text
+        "Cho danh sách lớp dưới đây (theo dạng '- id: ... | label: ...'), tạo THUỘC TÍNH DỮ LIỆU cho từng lớp, mỗi thuộc tính ở dạng 'class_id: prop_id|label, ...'. "
+        "prop_id là tên thuộc tính không dấu, label là tiếng Việt đầy đủ. Ví dụ: NguoiVietNam: ten|Tên, tuoi|Tuổi\n"
+        + self.class_text+
+        "\nCHỈ trả về danh sách, KHÔNG được thêm giải thích, ví dụ, lời dẫn, kết luận. Không thêm bất kỳ dòng nào ngoài kết quả theo format yêu cầu!"
+        "\nOutput must be strictly only the requested list, nothing else."
         )
         self.prop_text = self._call_ai(prompt)
         return self.prop_text
@@ -134,51 +150,73 @@ class OntologyBuilder:
         if self.rel_text is not None:
             return self.rel_text
         prompt = (
-            "Cho CLASSES + PROPERTIES sau, tạo QUAN HỆ dạng '- tenQuanHe (ClassA → ClassB)':\n" +
-            self.class_text + "\n\n" + self.prop_text
+        "Cho CLASSES + PROPERTIES sau, tạo QUAN HỆ giữa các lớp, mỗi dòng ở dạng '- id: quanHeId | label: Tên quan hệ | (ClassA_id → ClassB_id)':\n"
+        + self.class_text + "\n\n" + self.prop_text +
+        "\nVí dụ:\n- id: thuocQuocHieu | label: Thuộc Quốc Hiệu | (NguoiVietNam → QuocHieu)\n"
+        "\nKHÔNG được thêm lời giải thích, ví dụ, mở đầu, kết luận, chỉ trả về danh sách quan hệ đúng format yêu cầu."
+        "\nOutput must be strictly only the requested list, nothing else."
         )
         self.rel_text = self._call_ai(prompt)
         return self.rel_text
 
     # ---------- build OWL ----------
+    def parse_id_label(line):
+        # line: "- id: QuocHieu | label: Quốc Hiệu"
+        match = re.match(r"-?\s*id:\s*([^\|]+)\|\s*label:\s*(.+)", line)
+        if match:
+            return match.group(1).strip(), match.group(2).strip()
+        return None, None
+
+    
     def build_owl_and_check(self, owl_file="seed_ontology.owl", ns="http://example.org/seed.owl#", run_reasoner=True):
-        # tách dữ liệu
-        classes = [re.sub(r"^- ?", "", l).strip() for l in self.class_text.splitlines() if l.startswith("-")]
-        props   = [l.strip() for l in self.prop_text.splitlines() if ":" in l]
-        rels    = [re.sub(r"^- ?", "", l).strip() for l in self.rel_text.splitlines() if l.startswith("-")]
+        # Parse classes
+        class_map = {}
+        for l in self.class_text.splitlines():
+            if "id:" in l and "label:" in l:
+                cid, clabel = OntologyBuilder.parse_id_label(l)
+                if cid:
+                    class_map[cid] = {"label": clabel}
+
+        # Parse properties
+        prop_map = {}  # {class_id: [(prop_id, prop_label), ...]}
+        for l in self.prop_text.splitlines():
+            if ":" in l:
+                class_id, props = l.split(":", 1)
+                props = props.strip()
+                pairs = [p.strip() for p in props.split(",") if "|" in p]
+                prop_map[class_id.strip()] = [(p.split("|")[0].strip(), p.split("|")[1].strip()) for p in pairs]
+
+        # Parse relations
+        rels = []  # list of (rel_id, rel_label, dom_id, rng_id)
+        for l in self.rel_text.splitlines():
+            m = re.match(r"-?\s*id:\s*([^\|]+)\|\s*label:\s*([^\|]+)\|\s*\((.+?)\s*→\s*(.+?)\)", l)
+            if m:
+                rel_id, rel_label, dom, rng = m.groups()
+                rels.append((rel_id.strip(), rel_label.strip(), dom.strip(), rng.strip()))
 
         onto = get_ontology(ns)
         with onto:
-            # lớp
-            cmap = {c.replace(" ", "_"): types.new_class(c.replace(" ", "_"), (Thing,)) for c in classes}
-            # datatype property
-            for line in props:
-                if ":" not in line:
-                    print(f"⚠️ Định dạng thuộc tính không hợp lệ, bỏ qua: {line}")
-                    continue
-                cls_name, plist = [x.strip() for x in line.split(":", 1)]
-                cls_name_key = cls_name.replace(" ", "_")
-                if cls_name_key not in cmap:
-                    print(f"⚠️ Lớp '{cls_name}' không tồn tại trong danh sách lớp, bỏ qua thuộc tính: {line}")
-                    continue
-                for p in re.split(r",\s*", plist):
-                    if not p.strip():
-                        continue
-                    dp = types.new_class(re.sub(r"\W", "_", p), (DataProperty,))
-                    dp.domain = [cmap[cls_name_key]]
-                    dp.range = [str]  # Giả sử kiểu dữ liệu mặc định là string
-            # object property
-            for r in rels:
-                m = re.match(r"(.+?)\s*\((.+?)\s*→\s*(.+?)\)", r)
-                if not m:
-                    continue
-                name, dom, rng = m.groups()
-                op = types.new_class(re.sub(r"\W", "_", name), (ObjectProperty,))
-                dkey, rkey = dom.replace(" ", "_"), rng.replace(" ", "_")
-                if dkey in cmap:
-                    op.domain = [cmap[dkey]]
-                if rkey in cmap:
-                    op.range = [cmap[rkey]]
+            # Tạo class
+            cmap = {}
+            for cid, info in class_map.items():
+                owl_cls = types.new_class(cid, (Thing,))
+                owl_cls.label = info["label"]
+                cmap[cid] = owl_cls
+            # Tạo property
+            for class_id, plist in prop_map.items():
+                if class_id in cmap:
+                    for pid, plabel in plist:
+                        dp = types.new_class(pid, (DataProperty,))
+                        dp.domain = [cmap[class_id]]
+                        dp.range = [str]
+                        dp.label = plabel
+            # Tạo object property
+            for rel_id, rel_label, dom_id, rng_id in rels:
+                if dom_id in cmap and rng_id in cmap:
+                    op = types.new_class(rel_id, (ObjectProperty,))
+                    op.domain = [cmap[dom_id]]
+                    op.range = [cmap[rng_id]]
+                    op.label = rel_label
 
         onto.save(file=owl_file, format="rdfxml")
         self.owl_path = owl_file

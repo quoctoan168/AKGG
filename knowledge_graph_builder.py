@@ -1,7 +1,8 @@
 from owlready2 import get_ontology
 from neo4j import GraphDatabase
 from prompt_builder import Prompt
-from ontology_builder import OntologyBuilder
+from ask_monica import ask_monica
+
 import os
 
 class knowledge_graph_builder:
@@ -11,7 +12,6 @@ class knowledge_graph_builder:
         self.text_file = text_file
         self.driver = GraphDatabase.driver(neo4j_uri, auth=(neo4j_user, neo4j_password))
         self.onto = None
-        self.builder = OntologyBuilder(model=model, key_file=key_file)  # Reuse OntologyBuilder for AI calls
         self.classes = []
         self.datatype_props = []
         self.object_props = []
@@ -34,18 +34,23 @@ class knowledge_graph_builder:
             return f.read().strip()
 
     def create_prompt(self, text):
-        """Create a prompt to extract entities and relationships from text based on ontology."""
+        """Tạo prompt để trích xuất thực thể và quan hệ từ văn bản dựa trên ontology."""
+         # Đọc nội dung CQ Answers từ file
+        if not os.path.exists(self.cq_answers_file):
+            raise FileNotFoundError(f"CQ answers file not found: {self.cq_answers_file}")
+        with open(self.cq_answers_file, "r", encoding="utf-8") as f:
+            cq_content = f.read().strip()
         ontology_summary = (
-            f"Classes: {', '.join(self.classes)}\n"
-            f"Object Properties: {', '.join(self.object_props)}"
+            f"Lớp (Classes): {', '.join(self.classes)}\n"
+            f"Quan hệ đối tượng (Object Properties): {', '.join(self.object_props)}"
         )
         prompt = Prompt(
-            task_description="Extract entities and relationships from the provided text based on the given ontology.",
-            context="The ontology defines the structure for a Knowledge Graph about Vietnamese history. Use it to identify relevant entities and their relationships in the text.",
+            task_description="Trích xuất các thực thể và quan hệ từ văn bản được cung cấp dựa trên ontology đã cho.",
+            context=f"Nội dung câu trả lời CQ (Competency Questions):\n{cq_content}",
             input_data=text,
-            goal="Identify entities (instances of ontology classes) and relationships (object properties) as defined in the ontology.",
+            goal="Xác định các thực thể (là thể hiện của các lớp trong ontology) và các quan hệ (là các thuộc tính đối tượng) như đã được định nghĩa trong ontology.",
             output_format=(
-                "Return the result in the following format:\n"
+                "Trả kết quả theo định dạng sau:\n"
                 "[Entities]\n"
                 "- EntityName (ClassName)\n"
                 "...\n"
@@ -54,12 +59,12 @@ class knowledge_graph_builder:
                 "..."
             ),
             constraints=(
-                f"Only extract entities and relationships that match the ontology:\n{ontology_summary}\n"
-                "Do not invent new classes or relationships.\n"
-                "Ensure entity names are unique and meaningful based on the text context.\n"
-                "Every entity mentioned in relationships MUST be included in the [Entities] section with a class from the ontology.\n"
-                "Use only object properties defined in the ontology for relationships.\n"
-                "If an entity’s class is ambiguous, select the most relevant class from the ontology based on the context or the range of the object property it’s associated with."
+                f"Chỉ trích xuất những thực thể và quan hệ phù hợp với ontology đã cho:\n{ontology_summary}\n"
+                "Không được tạo ra lớp hoặc quan hệ mới ngoài ontology.\n"
+                "Tên thực thể phải duy nhất và có ý nghĩa trong ngữ cảnh văn bản.\n"
+                "Mỗi thực thể xuất hiện trong phần [Quan hệ] bắt buộc phải có mặt trong phần [Thực thể] với một lớp thuộc ontology.\n"
+                "Chỉ sử dụng các thuộc tính đối tượng đã được định nghĩa trong ontology để biểu diễn quan hệ.\n"
+                "Nếu lớp của một thực thể không rõ ràng, hãy chọn lớp phù hợp nhất dựa trên ngữ cảnh hoặc phạm vi (range) của thuộc tính đối tượng liên quan."
             )
         )
         return prompt.build()
@@ -67,7 +72,7 @@ class knowledge_graph_builder:
     def extract_kg_elements(self, text):
         """Call the AI to extract entities and relationships from text."""
         prompt_text = self.create_prompt(text)
-        response = self.builder._call_ai(prompt_text)
+        response = ask_monica(prompt_text, model=self.model, key_file=self.key_file)
         print("✅ AI Response:\n", response)
         return self.parse_ai_response(response)
 
@@ -201,7 +206,7 @@ class knowledge_graph_builder:
                 print("✅ Cleared Neo4j database")
         self.store_in_neo4j(entities, relationships)
         print("✅ Knowledge Graph built successfully")
-
+ 
     def close(self):
         """Close the Neo4j driver connection."""
         self.driver.close()

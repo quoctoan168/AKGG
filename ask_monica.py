@@ -18,6 +18,7 @@ def read_API_key(file_path, model_name):
 
 
 def ask_monica(prompt, model="gpt-4o", key_file="API_Key.txt"):
+    log_file="monica_log.txt"
     """Gửi prompt tới Monica và trả về phản hồi dưới dạng chuỗi."""
     API_KEY = read_API_key(key_file, "monica")
     ENDPOINT = "https://openapi.monica.im/v1/chat/completions"
@@ -47,14 +48,12 @@ def ask_monica(prompt, model="gpt-4o", key_file="API_Key.txt"):
         "stream": False
     }
 
+    reply = None
     try:
         response = requests.post(ENDPOINT, headers=headers, json=data)
         response.raise_for_status()
         result = response.json()
-
-        # Trả về nội dung trả lời
-        return result["choices"][0]["message"]["content"].strip()
-
+        reply = result["choices"][0]["message"]["content"].strip()
     except requests.exceptions.HTTPError as http_err:
         print(f"\n🔴 Lỗi HTTP: {http_err}")
         print(response.text)
@@ -62,24 +61,17 @@ def ask_monica(prompt, model="gpt-4o", key_file="API_Key.txt"):
         print(f"\n🔴 Lỗi gửi yêu cầu: {err}")
     except Exception as e:
         print(f"\n🔴 Lỗi không xác định: {e}")
-    
-    return None
+        reply = None
 
-# Khởi tạo prompt
-my_prompt = Prompt(
-    task_description="Sinh ontology từ mô tả nghiệp vụ.",
-    context="Mô hình phục vụ hệ thống quản lý đào tạo tại đại học.",
-    input_data="Các thực thể gồm Sinh viên, Môn học, Giảng viên, Lịch học.",
-    goal="Xác định class, thuộc tính, mối quan hệ và ràng buộc cơ bản.",
-    output_format="Dưới dạng OWL cơ bản, hoặc dạng bảng đơn giản phân loại rõ.",
-    constraints="Chỉ mô hình hóa kiến thức cốt lõi, tránh dư thừa.",
-    instructions="Trình bày súc tích, rõ ràng, chia mục hợp lý."
-)
+    # --- Ghi log ra file ---
+    try:
+        with open(log_file, "a", encoding="utf-8") as f:
+            f.write("\n" + "="*60 + "\n")
+            f.write("PROMPT:\n" + prompt + "\n")
+            f.write("-"*40 + "\n")
+            f.write("RESPONSE:\n" + (reply or "[NO RESPONSE]") + "\n")
+    except Exception as log_err:
+        print(f"⚠️ Không thể ghi log Monica: {log_err}")
 
-# Sinh nội dung từ class
-full_prompt = my_prompt.build()
+    return reply
 
-reply = ask_monica(full_prompt)
-if reply:
-    print("\n🟢 Phản hồi từ Monica:")
-    print(reply)

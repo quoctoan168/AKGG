@@ -3,40 +3,9 @@ from ontology_builder import OntologyBuilder
 builder = OntologyBuilder(model="gpt-4o")
 builder.set_description("Tôi đang xây dựng một hệ thống để lưu trữ thông tin về lịch sử Việt Nam và tra cứu các sự kiện lịch sử.")
 builder.set_purpose("Lưu trữ và tra cứu thông tin lịch sử.")
-builder.set_input_text("""Nước Việt Nam
-1. Quốc Hiệu
-2. Vị Trí và Diện Tích
-3. Địa Thế
-4. Chủng Loại
-5. Gốc Tích
-6. Người Việt Nam
-7. Sự Mở Mang Bờ Cõi
-8. Lịch Sử Việt Nam
-1. Quốc Hiệu. Nước Việt Nam ta về đời Hồng Bàng (2897 - 258 trước
-Tây lịch) gọi là Văn Lang, đời Thục An Dương Vương (257 - 207 trước Tây
-lịch) thì gọi là Âu Lạc. Đến nhà Tần (246 - 206 trước Tây lịch) lược định phía
-nam thì đặt làm Tượng Quận, sau nhà Hán (202 trước Tây lịch - 220 sau Tây
-lịch) dứt nhà Triệu, chia đất Tượng Quận ra làm ba quận là Giao Chỉ, Cửu
-Chân và Nhật Nam. Đến cuối đời nhà Đông Hán, vua Hiến Đế đổi Giao Chỉ
-làm Giao Châu. Nhà Đường lại đặt là An Nam Đô Hộ Phủ.
-Từ khi nhà Đinh (968 - 980) dẹp xong loạn Thập Nhị Sứ Quân, lập nên một
-nước tự chủ, đổi quốc hiệu là Đại Cồ Việt. Vua Lý Thánh Tông đổi là Đại
-Việt, đến đời vua Anh Tông, nhà Tống bên Tàu mới công nhận là An Nam
-Quốc.
-Đến đời vua Gia Long, thống nhất được cả Nam Bắc (1802), lấy lẽ
-rằng Nam là An Nam, Việt là Việt Thường, mới đặt quốc hiệu là Việt Nam.
-Vua Minh Mệnh lại cải làm Đại Nam.
- Quốc hiệu nước ta thay đổi đã nhiều lần, tuy rằng ngày nay ta vẫn
-theo thói quen dùng hai chữ An Nam, nhưng vì hai chữ ấy có ngụ ý phải
-thần phục nước Tàu, vậy thì ta nên nhất định lấy tên Việt Nam mà gọi nước
-nhà.
-2. Vị Trí và Diện Tích. Nước Việt Nam ở về phía đông nam châu Átế-á, hẹp bề ngang, dài bề dọc, hình cong như chữ S, trên phía bắc và dưới
-phía nam phình rộng ra, khúc giữa miền trung thì eo hẹp lại. 
-Đông và nam giáp bể Trung Quốc (tức là bể Nam Hải); Tây giáp Ai
-Lao và Cao Miên; Bắc giáp nước Tàu, liền với tỉnh QuảngĐông, Quảng Tâyvà Vân Nam.
-Diện tích cả nước rộng chừng độ 312.000 ki-lô-mét vuông chia ra như sau này:
- Bắc Việt: 105.000 km2
- Trung Việt: 150.000 km2
- Nam Việt: 57.000 km2 """)
+# Đọc input từ file
+with open("input_text/01.txt", "r", encoding="utf-8") as f:
+    input_text = f.read()
+builder.set_input_text(input_text)
 
 builder.run()  # In ra 12 CQ Answers và Seed‑Ontology
