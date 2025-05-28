@@ -8,4 +8,4 @@ with open("input_text/01.txt", "r", encoding="utf-8") as f:
     input_text = f.read()
 builder.set_input_text(input_text)
 
-builder.run()  # In ra 12 CQ Answers và Seed‑Ontology
+builder.run_Seeding()  # In ra 12 CQ Answers và Seed‑Ontology

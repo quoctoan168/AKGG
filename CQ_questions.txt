@@ -1,0 +1,12 @@
+CQ1: Miền tri thức (domain) là gì?
+CQ2: Mục tiêu chính của Knowledge Graph là gì?
+CQ3: Những thực thể (class) cốt lõi cần mô hình hóa là gì?
+CQ4: Thuộc tính (property) quan trọng của từng thực thể là gì?
+CQ5: Quan hệ (relation) chủ chốt giữa các thực thể là gì?
+CQ6: Ví dụ cụ thể (instance) cho mỗi lớp là gì?
+CQ7: Có ràng buộc nghiệp vụ (constraint) nào không?
+CQ8: Có yêu cầu đặc tính lớp (bắt buộc, duy nhất, temporal) không?
+CQ9: Có yếu tố thời gian nào cần mô hình hóa không?
+CQ10: Có cần lưu thông tin nguồn gốc (provenance) dữ liệu không?
+CQ11: Yêu cầu về chất lượng/độ tin cậy dữ liệu ra sao?
+CQ12: Ai là người dùng cuối và họ sẽ truy vấn như thế nào?

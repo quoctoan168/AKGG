@@ -1,0 +1,69 @@
+CQ1: Miền tri thức (domain) là gì?
+Miền tri thức (domain) là gì?  
+Lịch sử Việt Nam, tập trung vào thời kỳ nguyên thủy.
+
+CQ2: Mục tiêu chính của Knowledge Graph là gì?
+Mục tiêu chính của Knowledge Graph là gì?  
+Lưu trữ, tổ chức và tra cứu thông tin về các sự kiện, địa điểm, hiện vật và hoạt động liên quan đến lịch sử Việt Nam, đặc biệt là thời kỳ nguyên thủy.
+
+CQ3: Những thực thể (class) cốt lõi cần mô hình hóa là gì?
+Những thực thể (class) cốt lõi cần mô hình hóa là gì?  
+- Con người (Người nguyên thủy).  
+- Địa điểm (Núi Đọ, Núi Quan Yên, Núi Nuông).  
+- Công cụ (mảnh tước, rìu tay, hạch đá, công cụ chặt thô).  
+- Thời gian (niên đại, thời kỳ).  
+- Hoạt động (săn bắt, hái lượm, chế tác công cụ).
+
+CQ4: Thuộc tính (property) quan trọng của từng thực thể là gì?
+Thuộc tính (property) quan trọng của từng thực thể là gì?  
+- Con người: tên gọi, thời gian tồn tại, đặc điểm.  
+- Địa điểm: tên, tọa độ, mô tả địa lý, niên đại liên quan.  
+- Công cụ: tên gọi, chất liệu, kích thước, trọng lượng, chức năng.  
+- Thời gian: khoảng niên đại, sự kiện liên quan.  
+- Hoạt động: tên hoạt động, công cụ sử dụng, mục đích.
+
+CQ5: Quan hệ (relation) chủ chốt giữa các thực thể là gì?
+Quan hệ (relation) chủ chốt giữa các thực thể là gì?  
+- Con người sống tại Địa điểm.  
+- Con người sử dụng Công cụ.  
+- Công cụ được chế tác từ Địa điểm.  
+- Hoạt động xảy ra tại Địa điểm.  
+- Hoạt động liên quan đến Công cụ.  
+- Thời gian gắn với Địa điểm, Công cụ, Hoạt động.
+
+CQ6: Ví dụ cụ thể (instance) cho mỗi lớp là gì?
+Ví dụ cụ thể (instance) cho mỗi lớp là gì?  
+- Con người: Người Núi Đọ.  
+- Địa điểm: Núi Đọ, Núi Quan Yên, Núi Nuông.  
+- Công cụ: mảnh tước Clăctơn, rìu tay Núi Đọ, hạch đá.  
+- Thời gian: sơ kỳ thời đại đá cũ (30 vạn năm trước).  
+- Hoạt động: chế tác công cụ, săn bắt, hái lượm.
+
+CQ7: Có ràng buộc nghiệp vụ (constraint) nào không?
+Có ràng buộc nghiệp vụ (constraint) nào không?  
+- Mỗi công cụ phải gắn với ít nhất một địa điểm phát hiện.  
+- Mỗi hoạt động phải liên quan đến ít nhất một công cụ và một địa điểm.  
+- Niên đại sơ kỳ đá cũ phải nằm trong khoảng 30 vạn năm trước.
+
+CQ8: Có yêu cầu đặc tính lớp (bắt buộc, duy nhất, temporal) không?
+Có yêu cầu đặc tính lớp (bắt buộc, duy nhất, temporal) không?  
+- Địa điểm: tọa độ và tên là bắt buộc, duy nhất.  
+- Công cụ: tên và loại công cụ là bắt buộc.  
+- Thời gian: khoảng niên đại là bắt buộc, có yếu tố temporal.
+
+CQ9: Có yếu tố thời gian nào cần mô hình hóa không?
+Có yếu tố thời gian nào cần mô hình hóa không?  
+Có, bao gồm niên đại của các địa điểm, thời điểm xuất hiện và sử dụng công cụ, thời kỳ lịch sử liên quan.
+
+CQ10: Có cần lưu thông tin nguồn gốc (provenance) dữ liệu không?
+Có cần lưu thông tin nguồn gốc (provenance) dữ liệu không?  
+Có, cần lưu thông tin nguồn gốc từ các nghiên cứu khảo cổ, tài liệu lịch sử (ví dụ: Hán Văn Khân, Ban Nghiên cứu và biên soạn Lịch sử Thanh Hóa).
+
+CQ11: Yêu cầu về chất lượng/độ tin cậy dữ liệu ra sao?
+Yêu cầu về chất lượng/độ tin cậy dữ liệu ra sao?  
+Dữ liệu phải được thu thập từ các nguồn đáng tin cậy (nhà nghiên cứu, tài liệu khoa học), có ghi chú rõ ràng về nguồn và mức độ chính xác.
+
+CQ12: Ai là người dùng cuối và họ sẽ truy vấn như thế nào?
+Ai là người dùng cuối và họ sẽ truy vấn như thế nào?  
+Người dùng cuối là nhà nghiên cứu, học sinh, giáo viên, hoặc người quan tâm đến lịch sử Việt Nam. Họ sẽ truy vấn thông qua câu hỏi như “Người nguyên thủy ở Núi Đọ chế tác công cụ gì?”, “Niên đại của Núi Đọ là khi nào?”.
+

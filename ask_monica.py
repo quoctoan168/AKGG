@@ -18,7 +18,7 @@ def read_API_key(file_path, model_name):
 
 
 def ask_monica(prompt, model="gpt-4o", key_file="API_Key.txt"):
-    log_file="monica_log.txt"
+    log_file="output/monica_log.txt"
     """Gửi prompt tới Monica và trả về phản hồi dưới dạng chuỗi."""
     API_KEY = read_API_key(key_file, "monica")
     ENDPOINT = "https://openapi.monica.im/v1/chat/completions"
