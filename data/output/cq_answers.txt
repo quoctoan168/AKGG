@@ -1,0 +1,58 @@
+TOÀN BỘ CÁC CÂU HỎI COMPETENCY QUESTIONS (CQ):
+CQ1: Miền tri thức (domain) là gì?
+CQ2: Mục tiêu chính của Knowledge Graph là gì?
+CQ3: Những thực thể (class) cốt lõi cần mô hình hóa là gì?
+CQ4: Thuộc tính (property) quan trọng của từng thực thể là gì?
+CQ5: Quan hệ (relation) chủ chốt giữa các thực thể là gì?
+CQ6: Ví dụ cụ thể (instance) cho mỗi lớp là gì?
+CQ7: Có ràng buộc nghiệp vụ (constraint) nào không?
+CQ8: Có yêu cầu đặc tính lớp (bắt buộc, duy nhất, temporal) không?
+CQ9: Có yếu tố thời gian nào cần mô hình hóa không?
+CQ10: Có cần lưu thông tin nguồn gốc (provenance) dữ liệu không?
+CQ11: Yêu cầu về chất lượng/độ tin cậy dữ liệu ra sao?
+CQ12: Ai là người dùng cuối và họ sẽ truy vấn như thế nào?
+
+TRẢ LỜI TỔNG HỢP TỪ AI:
+CQ1: Miền tri thức (domain) là Lịch sử.
+
+CQ2: Mục tiêu chính của Knowledge Graph là biểu diễn tri thức lịch sử được trích xuất từ văn bản thành một đồ thị có cấu trúc, cho phép truy vấn và phân tích thông tin một cách hiệu quả.  Cụ thể hơn, nó giúp tìm kiếm, khám phá mối liên hệ giữa các thực thể lịch sử, sự kiện, và khái niệm, từ đó hỗ trợ nghiên cứu, học tập và tìm hiểu về lịch sử.
+
+CQ3: Những thực thể (class) cốt lõi cần mô hình hóa có thể bao gồm: Nhân vật (Person), Sự kiện (Event), Địa điểm (Location), Tổ chức (Organization), Thời kỳ (Period).
+
+CQ4: Thuộc tính (property) quan trọng của từng thực thể:
+* **Nhân vật (Person):** Tên, ngày sinh, ngày mất, quê quán, vai trò, mô tả, hình ảnh.
+* **Sự kiện (Event):** Tên, thời gian bắt đầu, thời gian kết thúc, địa điểm, mô tả, nguyên nhân, kết quả.
+* **Địa điểm (Location):** Tên, tọa độ, loại địa điểm (thành phố, quốc gia, vùng miền), mô tả.
+* **Tổ chức (Organization):** Tên, thời gian thành lập, mục đích, thành viên, địa điểm.
+* **Thời kỳ (Period):** Tên, thời gian bắt đầu, thời gian kết thúc, các sự kiện chính.
+
+CQ5: Quan hệ (relation) chủ chốt giữa các thực thể:
+* **Nhân vật - Sự kiện:** Tham gia, lãnh đạo, chứng kiến, bị ảnh hưởng.
+* **Sự kiện - Địa điểm:** Diễn ra tại.
+* **Nhân vật - Địa điểm:** Sinh ra tại, sống tại, mất tại.
+* **Nhân vật - Tổ chức:** Thành lập, lãnh đạo, là thành viên.
+* **Sự kiện - Thời kỳ:** Thuộc về.
+* **Nhân vật - Thời kỳ:** Sống trong thời kỳ.
+
+CQ6: Ví dụ cụ thể (instance) cho mỗi lớp:
+* **Nhân vật (Person):** Napoleon Bonaparte
+* **Sự kiện (Event):** Trận Waterloo
+* **Địa điểm (Location):** Paris, Pháp
+* **Tổ chức (Organization):** Đảng Cộng sản Việt Nam
+* **Thời kỳ (Period):** Chiến tranh thế giới thứ hai
+
+CQ7: Có ràng buộc nghiệp vụ (constraint) nào không?  Một số ràng buộc có thể bao gồm: Ngày sinh phải trước ngày mất, thời gian bắt đầu sự kiện phải trước thời gian kết thúc, một sự kiện chỉ có thể diễn ra tại một địa điểm tại một thời điểm.
+
+CQ8: Có yêu cầu đặc tính lớp (bắt buộc, duy nhất, temporal) không?
+* **Bắt buộc:** Tên của tất cả các thực thể là bắt buộc.
+* **Duy nhất:** Tên kết hợp với ngày sinh/thành lập có thể được sử dụng để đảm bảo tính duy nhất cho Nhân vật và Tổ chức.
+* **Temporal:**  Sự kiện và Thời kỳ có tính chất thời gian.
+
+CQ9: Có yếu tố thời gian nào cần mô hình hóa không? Có, thời gian của sự kiện, thời kỳ, ngày sinh, ngày mất của nhân vật cần được mô hình hóa.
+
+CQ10: Có cần lưu thông tin nguồn gốc (provenance) dữ liệu không? Có, cần lưu trữ thông tin nguồn gốc của dữ liệu để đảm bảo tính truy xuất nguồn gốc và đánh giá độ tin cậy. Ví dụ: URL của tài liệu, tên tài liệu.
+
+CQ11: Yêu cầu về chất lượng/độ tin cậy dữ liệu ra sao? Dữ liệu cần chính xác, nhất quán và đầy đủ nhất có thể. Cần có cơ chế kiểm tra và xác minh thông tin.
+
+CQ12: Ai là người dùng cuối và họ sẽ truy vấn như thế nào? Người dùng cuối có thể là nhà nghiên cứu lịch sử, học sinh, sinh viên, hoặc bất kỳ ai quan tâm đến lịch sử. Họ có thể truy vấn thông tin thông qua giao diện tìm kiếm, bằng ngôn ngữ tự nhiên hoặc bằng các câu truy vấn có cấu trúc (SPARQL). Ví dụ: "Tìm kiếm những sự kiện diễn ra tại Hà Nội trong thế kỷ 20", "Ai là tổng thống Mỹ trong Chiến tranh thế giới thứ hai?", "Mối quan hệ giữa Napoleon và Cách mạng Pháp là gì?".
+---

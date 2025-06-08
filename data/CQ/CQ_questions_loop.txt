@@ -1,0 +1,4 @@
+CQ1: Văn bản trên cung cấp các nội dung kiến thức gì?
+CQ2: Để biểu diễn kiến thức trên vào knowledge Graph có thực thể (class) mới nào cần bổ sung vào ontology không?
+CQ3: Để biểu diễn kiến thức trên vào knowledge Graph có thuộc tính (property) mới nào cần bổ sung cho các thực thể hiện có hoặc mới không?
+CQ4: Để biểu diễn kiến thức trên vào knowledge Graph có quan hệ (relation) mới nào cần bổ sung giữa các thực thể không?

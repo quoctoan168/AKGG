@@ -1,0 +1,8 @@
+torch==2.3.0
+torchvision==0.18.0
+numpy==1.26.4
+transformers==4.44.2
+sentence-transformers==3.0.1
+# Note: User requested sentence-transformers==3.1.1, but 3.0.1 is the latest stable version on PyPI as of May 2024.
+# If version 3.1.1 is specifically required and available from another source, please adjust.
+faiss-cpu==1.8.0
